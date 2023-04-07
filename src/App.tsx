@@ -1,39 +1,25 @@
-import { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
+import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader';
-import './App.css'
-import * as THREE from "three";
+import './App.css';
 
 function App() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    let canvas: HTMLCanvasElement;
-    canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    let canvas: HTMLCanvasElement | null = canvasRef.current;
+    if (!canvas) return;
 
-    // display sizes
-    const sizes = {
-      width: window.innerWidth,
-      height: window.innerHeight,
-    };
+    const scene = new THREE.Scene();
 
-    // scene
-    const scene: THREE.Scene = new THREE.Scene();
-
-    // camera
-    const camera: THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
+    const camera = new THREE.PerspectiveCamera(
       75,
-      sizes.width / sizes.height,
+      window.innerWidth / window.innerHeight,
       0.1,
       1000
     );
-    camera.position.set(0, 0, 5);
-    scene.add(camera);
+    camera.position.z = 5;
 
-    const loader = new GLTFLoader();
-    loader.load('/models/chiikawa.glb', (gltf) => {
-      scene.add(gltf.scene);
-    });
-
-    // light
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
@@ -41,28 +27,34 @@ function App() {
     directionalLight.position.set(10, 10, 10);
     scene.add(directionalLight);
 
-    //render
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
-      antialias: true,
+      alpha: true,
     });
-    renderer.setSize(sizes.width, sizes.height);
-    renderer.setPixelRatio(window.devicePixelRatio);
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
-    function animate() {
-      requestAnimationFrame(animate);
+    let model: THREE.Group;
+    const loader = new GLTFLoader();
+    loader.load('/models/chiikawa.glb', (gltf) => {
+      model = gltf.scene;
+      scene.add(model);
+    });
+
+    let time = 0;
+    const animate = () => {
+      time += 0.001;
+      if (model) {
+        model.rotation.x += -0.001;
+        model.rotation.y += 0.006;
+      }
+
       renderer.render(scene, camera);
-    }
+      requestAnimationFrame(animate);
+    };
     animate();
-
   }, []);
 
-  return (
-    <>
-      <canvas id="canvas"></canvas>
-      <div className="mainContent"></div>
-    </>
-  )
+  return <canvas ref={canvasRef} className="canvas" />;
 }
 
 export default App;

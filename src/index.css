@@ -1,0 +1,9 @@
+body {
+    /* background-color: rgb(241, 214, 224); */
+    background-image: url("public/images/earth-ga0aa22751_1280-1118x538.webp");
+    background-size: cover;
+}
+
+canvas {
+    background-color: transparent;
+}
